@@ -1,6 +1,36 @@
 [package]
 name = "solpay-blockchain-service"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
+# Async runtime
+tokio = { version = "1.41", features = ["full"] }
+
+# Web framework for health check endpoint
+actix-web = "4"
+actix-rt = "2"
+
+# RabbitMQ client
+lapin = "2.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async traits
+async-trait = "0.1"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Environment variables
+dotenvy = "0.15"
+
+# Futures utilities
+futures-lite = "2.0"
