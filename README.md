@@ -1,1 +1,0 @@
-# solpay-blockchain-service
