@@ -1,5 +1,4 @@
 use axum::Json;
-use serde::de;
 
 pub struct HealthModel {
     pub status: String,
