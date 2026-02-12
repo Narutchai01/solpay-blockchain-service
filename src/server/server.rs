@@ -27,7 +27,7 @@ impl IServer for ServerImpl {
         app = route_manager.setup();
 
         let addr = SocketAddr::from(([0, 0, 0, 0], self.port as u16));
-        println!("Listening on {}", addr);
+        println!("🚀 Server listening on {}", addr);
 
         // 3. รัน Server
         let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

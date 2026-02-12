@@ -1,4 +1,5 @@
-use axum::Router;
+use crate::modules::health::health_handler::HealthHandlerImpl;
+use axum::{Router, routing::get};
 
 pub trait IHealthRoute {
     fn register(&self) -> Router;
@@ -20,6 +21,6 @@ impl HealthRouteImpl {
 impl IHealthRoute for HealthRouteImpl {
     fn register(&self) -> Router {
         let router = self.router.clone();
-        router.route(&self.path, axum::routing::get(|| async { "OK" }))
+        router.route(&self.path, get(HealthHandlerImpl::check_health))
     }
 }
