@@ -5358,6 +5358,7 @@ dependencies = [
  "futures-util",
  "lapin",
  "serde",
+ "serde_json",
  "solana-client",
  "solana-sdk",
  "tokio",
