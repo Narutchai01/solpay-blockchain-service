@@ -2,15 +2,16 @@ use solpay_blockchain_service::core::Config;
 use solpay_blockchain_service::modules::mq;
 use solpay_blockchain_service::server::{IServer, ServerImpl};
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread")]
 async fn main() {
     let cfg = Config::load();
 
-    let mq_connection = mq::mq::MqClient::connect(&cfg.mq_url);
-
-    mq_connection
+    let mq_connection = mq::mq::connect(&cfg.mq_url)
         .await
-        .expect("Failed to connect to message queue");
+        .expect("failed to connect to RabbitMQ");
+
+    let channel_a = mq_connection.create_channel().await.unwrap();
+    let channel_b = mq_connection.create_channel().await.unwrap();
 
     let server = ServerImpl::new(cfg.app_port);
 
@@ -18,5 +19,5 @@ async fn main() {
 
     println!("Blocking main thread until server is done...");
 
-    let _ = server_thread.await;
+    let _ = server_thread.await.unwrap();
 }

@@ -1,14 +1,8 @@
-use lapin::{Connection, ConnectionProperties, Result};
+use lapin::{Connection, ConnectionProperties};
 
-pub struct MqClient {}
+pub async fn connect(uri: &str) -> lapin::Result<Connection> {
+    let conn = Connection::connect(uri, ConnectionProperties::default()).await?;
 
-impl MqClient {
-    pub async fn connect(uri: &str) -> Result<Connection> {
-        let options = ConnectionProperties::default();
-
-        let connection = Connection::connect(uri, options).await?;
-        println!("🐰 RabbitMQ Connected successfully!");
-
-        Ok(connection)
-    }
+    println!("🐰 RabbitMQ Connected successfully!");
+    Ok(conn)
 }
