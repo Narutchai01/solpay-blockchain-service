@@ -5,6 +5,7 @@ use std::env;
 pub struct Config {
     pub app_port: i32,
     pub environment: String,
+    pub mq_url: String,
 }
 
 impl Config {
@@ -18,6 +19,7 @@ impl Config {
                 .parse::<i32>()
                 .expect("APP_PORT must be a valid integer"),
             environment: Self::get_env("ENVIRONMENT", Some("development")),
+            mq_url: Self::get_env("MQ_URL", Some("amqp://guest:guest@localhost:5672/")),
         }
     }
 

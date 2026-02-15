@@ -5,9 +5,12 @@ edition = "2024"
 
 [dependencies]
 axum = "0.8.8"
+bs58 = "0.5.1"
 dotenvy = "0.15.7"
 futures-util = "0.3.31"
 lapin = "4.0.0"
 serde = "1.0.228"
+solana-client = "3.1.8"
+solana-sdk = "4.0.0"
 tokio = { version = "1.49.0", features = ["full"] }
 tokio-executor-trait = "3.1.0"
