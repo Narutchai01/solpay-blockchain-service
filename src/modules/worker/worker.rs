@@ -7,6 +7,7 @@ use solana_client::rpc_client::RpcClient;
 pub struct TransactionData {
     pub tx_id: String,
     pub amount: f64,
+    pub base64_tx: Option<String>,
 }
 
 // --- PRODUCER TASK ---
@@ -18,6 +19,7 @@ pub async fn run_producer(channel: Channel) {
     let tx = TransactionData {
         tx_id: "tx1234567890".to_string(),
         amount: 100.0,
+        base64_tx: None,
     };
     let payload = serde_json::to_vec(&tx).unwrap();
 
@@ -80,18 +82,21 @@ pub async fn run_consumer(channel: Channel) {
 
     while let Some(delivery) = consumer.next().await {
         match delivery {
-            Ok(delivery) => {
-                let msg = String::from_utf8_lossy(&delivery.data);
-                println!("📩 Received message: {}", msg);
+            Ok(delivery) => match serde_json::from_slice::<TransactionData>(&delivery.data) {
+                Ok(tx) => {
+                    println!("📩 Received transaction data: {:?}", tx);
 
-                // Acknowledge the message
-                if let Err(e) = delivery
-                    .ack(lapin::options::BasicAckOptions::default())
-                    .await
-                {
-                    eprintln!("❌ Failed to ack message: {:?}", e);
+                    if let Err(e) = delivery
+                        .ack(lapin::options::BasicAckOptions::default())
+                        .await
+                    {
+                        eprintln!("❌ Failed to ack message: {:?}", e);
+                    }
                 }
-            }
+                Err(e) => {
+                    eprintln!("❌ Failed to deserialize message: {:?}", e);
+                }
+            },
 
             Err(e) => {
                 eprintln!("❌ Error receiving message: {:?}", e);
