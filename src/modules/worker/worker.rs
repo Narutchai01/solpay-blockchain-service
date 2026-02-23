@@ -238,10 +238,10 @@ pub async fn run_consumer(channel: Channel) {
                     }
                     Err(e) => {
                         eprintln!("❌ Failed to send transaction to Solana: {:?}", e);
-                        // Nack + requeue = true เพื่อ retry
+                        // Nack + requeue = false เพื่อไม่ retry, clear จาก queue
                         let _ = delivery
                             .nack(lapin::options::BasicNackOptions {
-                                requeue: true,
+                                requeue: false,
                                 ..Default::default()
                             })
                             .await;
