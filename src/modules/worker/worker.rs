@@ -234,6 +234,12 @@ pub async fn run_consumer(channel: Channel) {
                             .await
                         {
                             eprintln!("❌ Failed to ack message: {:?}", e);
+                            let _ = delivery
+                                .nack(lapin::options::BasicNackOptions {
+                                    requeue: false,
+                                    ..Default::default()
+                                })
+                                .await;
                         }
                     }
                     Err(e) => {
