@@ -7,50 +7,58 @@ use solana_sdk::transaction::VersionedTransaction;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionData {
     pub tx_id: String,
-    pub amount: f64,
     pub base64_tx: Option<String>,
+    pub metadata: Option<MetaData>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MetaData {
+    pub transaction_type: String,
+    pub amount_thb: f64,
+    pub amount_usdc: f64,
+    pub account_id: i64,
 }
 
 // --- PRODUCER TASK ---
 // จำลองการรับข้อมูลจาก Service A แล้วส่งเข้า RabbitMQ
-pub async fn run_producer(channel: Channel) {
-    println!("📡 Producer connecting to Service A...");
+// pub async fn run_producer(channel: Channel) {
+//     println!("📡 Producer connecting to Service A...");
 
-    // Example data
-    let tx = TransactionData {
-        tx_id: "tx1234567890".to_string(),
-        amount: 100.0,
-        base64_tx: None,
-    };
-    let payload = serde_json::to_vec(&tx).unwrap();
+//     // Example data
+//     let tx = TransactionData {
+//         tx_id: "tx1234567890".to_string(),
+//         base64_tx: None,
+//     };
 
-    // Declare a queue (idempotent)
-    let queue_name = lapin::types::ShortString::from("transactions");
-    channel
-        .queue_declare(
-            queue_name.clone(),
-            QueueDeclareOptions::default(),
-            FieldTable::default(),
-        )
-        .await
-        .expect("queue_declare");
+//     let payload = serde_json::to_vec(&tx).unwrap();
 
-    // Publish the message
-    let confirm = channel
-        .basic_publish(
-            "".into(),
-            queue_name,
-            BasicPublishOptions::default(),
-            &payload,
-            BasicProperties::default(),
-        )
-        .await
-        .expect("basic_publish")
-        .await
-        .expect("publisher confirm");
+//     // Declare a queue (idempotent)
+//     let queue_name = lapin::types::ShortString::from("transactions");
+//     channel
+//         .queue_declare(
+//             queue_name.clone(),
+//             QueueDeclareOptions::default(),
+//             FieldTable::default(),
+//         )
+//         .await
+//         .expect("queue_declare");
 
-    println!("✅ Sent transaction: {:?}, confirm: {:?}", tx, confirm);
-}
+//     // Publish the message
+//     let confirm = channel
+//         .basic_publish(
+//             "".into(),
+//             queue_name,
+//             BasicPublishOptions::default(),
+//             &payload,
+//             BasicProperties::default(),
+//         )
+//         .await
+//         .expect("basic_publish")
+//         .await
+//         .expect("publisher confirm");
+
+//     println!("✅ Sent transaction: {:?}, confirm: {:?}", tx, confirm);
+// }
 
 // --- CONSUMER TASK ---
 // pub async fn run_consumer(channel: Channel) {
@@ -126,14 +134,15 @@ pub async fn run_consumer(channel: Channel) {
     let rpc_url = "https://api.devnet.solana.com";
     let client = RpcClient::new(rpc_url.to_string());
 
-    let queue_name = "transactions";
+    let queue_name = "solana-worker.tx.submit";
+
+    let options = QueueDeclareOptions {
+        durable: true, // เปลี่ยนตรงนี้ให้เป็น true
+        ..Default::default()
+    };
 
     channel
-        .queue_declare(
-            queue_name.into(),
-            QueueDeclareOptions::default(),
-            FieldTable::default(),
-        )
+        .queue_declare(queue_name.into(), options, FieldTable::default())
         .await
         .expect("Failed to declare queue");
 
