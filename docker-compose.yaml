@@ -1,0 +1,17 @@
+services:
+  blockchain-queue:
+    container_name: solpay-blockchain-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      APP_PORT: 8009
+      MQ_URL: amqp://solpay_user:solpay_password@solpayg-rabbitmq:5672/solpay_vhost
+    ports:
+      - "8009:8009"
+    networks:
+      - solpay-core-service_solpay-networks
+
+networks:
+  solpay-core-service_solpay-networks:
+    external: true

@@ -22,6 +22,7 @@ pub struct MetaData {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WorkerMessage {
     pub tx_id: String,
+    pub source_worker: String,
     pub status: String,
 }
 
@@ -243,6 +244,7 @@ pub async fn run_consumer(channel: Channel) {
                         let msg = WorkerMessage {
                             tx_id: tx_data.tx_id.clone(),
                             status: "BLOCKCHAIN_COMPLETED".to_string(),
+                            source_worker: "SOLANA".to_string(),
                         };
 
                         run_producer(&channel, msg).await;
@@ -266,6 +268,7 @@ pub async fn run_consumer(channel: Channel) {
 
                         let msg = WorkerMessage {
                             tx_id: tx_data.tx_id.clone(),
+                            source_worker: "SOLANA".to_string(),
                             status: "BLOCKCHAIN_FAILED".to_string(),
                         };
 
