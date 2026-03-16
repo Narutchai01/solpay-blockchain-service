@@ -2,6 +2,8 @@ use futures_util::StreamExt;
 use lapin::{BasicProperties, Channel, options::*, types::FieldTable};
 use serde::{Deserialize, Serialize};
 use solana_client::rpc_client::RpcClient;
+use solana_sdk::message::VersionedMessage;
+use solana_sdk::pubkey::Pubkey;
 use solana_sdk::transaction::VersionedTransaction;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -24,6 +26,31 @@ pub struct WorkerMessage {
     pub tx_id: String,
     pub source_worker: String,
     pub status: String,
+}
+
+fn is_spl_token_instruction(program_id: &Pubkey) -> bool {
+    let spl_token_program = Pubkey::from_str_const("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+    let spl_token_2022_program =
+        Pubkey::from_str_const("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+
+    *program_id == spl_token_program || *program_id == spl_token_2022_program
+}
+
+fn is_spl_token_transaction(transaction: &VersionedTransaction) -> bool {
+    match &transaction.message {
+        VersionedMessage::Legacy(msg) => msg.instructions.iter().any(|ix| {
+            msg.account_keys
+                .get(ix.program_id_index as usize)
+                .map(is_spl_token_instruction)
+                .unwrap_or(false)
+        }),
+        VersionedMessage::V0(msg) => msg.instructions.iter().any(|ix| {
+            msg.account_keys
+                .get(ix.program_id_index as usize)
+                .map(is_spl_token_instruction)
+                .unwrap_or(false)
+        }),
+    }
 }
 
 // --- PRODUCER TASK ---
@@ -231,6 +258,23 @@ pub async fn run_consumer(channel: Channel) {
                         continue;
                     }
                 };
+
+                if !is_spl_token_transaction(&transaction) {
+                    eprintln!("❌ Transaction is not an SPL token transaction");
+
+                    let msg = WorkerMessage {
+                        tx_id: tx_data.tx_id.clone(),
+                        source_worker: "SOLANA".to_string(),
+                        status: "BLOCKCHAIN_FAILED".to_string(),
+                    };
+
+                    run_producer(&channel, msg).await;
+
+                    let _ = delivery
+                        .ack(lapin::options::BasicAckOptions::default())
+                        .await;
+                    continue;
+                }
 
                 // 5. ส่ง Transaction ไปที่ Solana
                 match client.send_and_confirm_transaction(&transaction) {
