@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     environment:
       APP_PORT: 8009
-      MQ_URL: amqp://solpay_user:solpay_password@solpayg-rabbitmq:5672/solpay_vhost
+      MQ_URL: amqp://solpay_user:solpay_password@solpay-rabbitmq:5672/solpay_vhost
     ports:
       - "8009:8009"
     networks:
