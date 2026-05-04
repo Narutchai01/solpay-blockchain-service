@@ -11,7 +11,6 @@ services:
       MQ_PASSWORD: ${MQ_PASSWORD}
       MQ_VHOST: ${MQ_VHOST}
       MQ_URL: amqp://${MQ_USER}:${MQ_PASSWORD}@solpay-rabbitmq/${MQ_VHOST}
-
     ports:
       - "8009:8009"
     networks:
